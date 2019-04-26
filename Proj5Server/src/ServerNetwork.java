@@ -71,7 +71,7 @@ public abstract class ServerNetwork {
 		private Socket socket;
 		private ObjectOutputStream out;
 		private int clientID = 1;
-		
+		private int i=0;
 		public void run() {
 			try{
 				
@@ -85,51 +85,27 @@ public abstract class ServerNetwork {
 					myThread t = new myThread(server.accept(), clientID);
 					t.start();
 					if(clients.size()<4) {
+						
 						clients.add(t);
+					
 					}
 					callback.accept("Player " + clientID + " joined");
 					if(clients.size() == 4) {
 						callback.accept("There are 4 players, the game will now begin");
-						if(clients.get(0).getAnswer()!=null && clients.get(1).getAnswer()!=null && clients.get(2).getAnswer()!=null
-								&&clients.get(3).getAnswer()!=null &&clients.get(0).getPoints()<4 && clients.get(1).getPoints()<4 
-								&&clients.get(2).getPoints()<4 && clients.get(3).getPoints()<4) {
-							send("new Question");
-							
-							
-							clients.get(0).setCorrectAnswer("A");
-							
+						while(clients.get(3).out == null) {
+							Thread.sleep(1000);
 						}
-						//check if one of them won
-						else {
-							for(int i = 0; i<= clients.size(); i++) {
-								if(clients.get(i).getPoints() == 3) {
-									clients.get(i).out.writeObject("YOU WON");
-									for(int j = 0; j<clients.size();j++) {
-										if(i!=j) {
-											clients.get(i).out.writeObject("YOU LOST");
-										}
-									}
-								}
-								/*
-								while(clients.get(i).getPoints()<4) {
-									//new question data structure
-									//get new question
-									//set up possible answers
-									//get answer
-									//wait 10 seconds for answer even if they already submitted an answer(makes it easier)
-									//start server timer here too
-									//update everyone
-									clients.get(i).setCorrectAnswer("A");
-									//send("You have 10 seconds to submit an answer");
-									//send("new question");
-									clients.get(i).inGame = true;
-									//Thread.sleep(10000);
-									//Maybe send a message like startTimer?
-								}*/
-								
-							}
-							//Start game()
-						}
+						
+						
+						//REPLACE THIS WITH FIRST QUESTION
+						clients.get(0).setCorrectAnswer("A");
+						clients.get(1).setCorrectAnswer("A");
+						clients.get(2).setCorrectAnswer("A");
+						clients.get(3).setCorrectAnswer("A");
+						send("Q: Question");
+						//clients.get(3).out.writeObject("Q: Question");
+						
+						
 					}
 					clientID++;
 				}
@@ -146,20 +122,14 @@ public abstract class ServerNetwork {
 		private Socket socket;
 		private ObjectOutputStream out;
 		private int myID;
-		private int opponentID = 0;
-		private boolean lookingForGame = false;
-		private boolean isChallenged = false;
-		private boolean inGame = false;
-		private boolean isHost = false;
-		private String dataOne;
-		private String dataTwo;
-		private boolean madeChoice;
+		private boolean inGame;
 		private int points;
 		private String correctAnswer;
 		private String answer;
 		myThread(Socket s, int i) {
 			this.socket = s;
 			this.myID = i;
+			this.inGame = true;
 		}
 		
 		/**
@@ -206,21 +176,72 @@ public abstract class ServerNetwork {
 				//out.writeObject("A: Yessir");
 				
 				while(true) {
+					if(clients.size()>3) {
+						System.out.println("here?");
+						if(clients.get(0).inGame == false) {
+							clients.get(0).setAnswer("No Answer");
+							System.out.println("set 0 to no answer");
+						}
+						if(clients.get(1).inGame == false) {
+							clients.get(1).setAnswer("No Answer");
+							System.out.println("set 1 to no answer");
+						}
+						if(clients.get(2).inGame == false) {
+							clients.get(0).setAnswer("No Answer");
+							System.out.println("set 2 to no answer");
+						}
+						if(clients.get(3).inGame == false) {
+							clients.get(3).setAnswer("No Answer");
+							System.out.println("set 3 to no answer");
+						}
+						if(clients.get(0).getAnswer()!=null && clients.get(1).getAnswer()!=null && clients.get(2).getAnswer()!=null
+								&&clients.get(3).getAnswer()!=null ) {
+							
+							//GET RANDOM QUESTION AND DO ALL this logic
+							send("Q: new Question");
+							clients.get(0).setCorrectAnswer("A");
+							clients.get(1).setCorrectAnswer("A");
+							clients.get(2).setCorrectAnswer("A");
+							clients.get(3).setCorrectAnswer("A");
+							clients.get(0).setAnswer(null);
+							clients.get(1).setAnswer(null);
+							clients.get(2).setAnswer(null);
+							clients.get(3).setAnswer(null);
+							
+						}
+						
+						//check if one of them won
+						else {
+							for(int i = 0; i< clients.size(); i++) {
+								if(clients.get(i).getPoints() == 3) {
+									clients.get(i).out.writeObject("YOU WON");
+									for(int j = 0; j<clients.size();j++) {
+										if(i!=j) {
+											clients.get(i).out.writeObject("YOU LOST");
+										}
+									}
+								}
+								
+								
+							}
+							
+						}
+					}
 					
 					Serializable data = (Serializable) in.readObject();
 					
-					// when player wants to return to the lobby
-					if(data.toString().intern() == "quit") {
-						inGame = false;
-						lookingForGame = false;
-						isHost = false;
-						isChallenged = false;
-					}
 					// show server what client picked
 					callback.accept("Player " + myID + " picked " + data);
-					this.setAnswer(data.toString());
+					this.setAnswer(data.toString().intern());
+					if(getAnswer()!=null&&getAnswer()== correctAnswer) {
+						out.writeObject("Good job,you got it correct");
+						//System.out.println("here");
+					}
+					else if (getAnswer()!=null && getAnswer() != correctAnswer) {
+						out.writeObject("Incorrect!");
+					}
 					//check timer here if it equals 10 check, otherwise dont do anything
-					System.out.println(inGame);
+					//System.out.println(inGame);
 					//out.writeObject("You have 10 seconds to submit an answer");
 					//out.writeObject("new question");
 					
@@ -241,18 +262,31 @@ public abstract class ServerNetwork {
 				try {
 					send(convertToString(activeConnections)); }
 				catch(Exception f) {
+					
 					f.printStackTrace();
+					
 				}
 				callback.accept("Player " + myID + " disconnected");
+				clients.get(myID-1).inGame = false;
+				System.out.println("set to null");
 			}
 		}
 	}
 }
-class Helper extends TimerTask 
-{ 
-    public static int i = 0; 
-    public void run() 
-    { 
-        System.out.println("Timer ran " + ++i); 
-    } 
-} 
+ 
+/*
+while(clients.get(i).getPoints()<4) {
+	//new question data structure
+	//get new question
+	//set up possible answers
+	//get answer
+	//wait 10 seconds for answer even if they already submitted an answer(makes it easier)
+	//start server timer here too
+	//update everyone
+	clients.get(i).setCorrectAnswer("A");
+	//send("You have 10 seconds to submit an answer");
+	//send("new question");
+	clients.get(i).inGame = true;
+	//Thread.sleep(10000);
+	//Maybe send a message like startTimer?
+}*/
