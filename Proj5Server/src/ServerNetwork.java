@@ -128,7 +128,7 @@ public abstract class ServerNetwork {
 		private ObjectOutputStream out;
 		private int myID;
 		private boolean inGame;
-		private int points;
+		private int points = 0;
 		private String correctAnswer;
 		private String answer;
 		myThread(Socket s, int i) {
@@ -160,8 +160,8 @@ public abstract class ServerNetwork {
 			// TODO Auto-generated method stub
 			return this.points;
 		}
-		public void setPoints(int points) {
-			this.points = points;
+		public void setPoints() {
+			this.points += 1;
 		}
 
 		public void run() {
@@ -202,6 +202,13 @@ public abstract class ServerNetwork {
 						if(clients.get(0).getAnswer()!=null && clients.get(1).getAnswer()!=null && clients.get(2).getAnswer()!=null
 								&&clients.get(3).getAnswer()!=null ) {
 							
+							// send clients a message that it is the next round
+							send("Begin next round!");
+							
+							//send the updated scores to clients
+							send("SCORES		Player1: " + clients.get(0).getPoints() + " Player2: " + clients.get(1).getPoints() + 
+									" Player3: " + clients.get(2).getPoints() + " Player4: " + clients.get(3).getPoints());
+							
 							//GET RANDOM QUESTION AND DO ALL this logic
 							send("Q: " + questionBank.getQuestion());
 							send(questionBank.getChoices());
@@ -213,7 +220,6 @@ public abstract class ServerNetwork {
 							clients.get(1).setAnswer(null);
 							clients.get(2).setAnswer(null);
 							clients.get(3).setAnswer(null);
-							
 						}
 						
 						//check if one of them won
@@ -241,7 +247,8 @@ public abstract class ServerNetwork {
 					this.setAnswer(data.toString().intern());
 					if(getAnswer()!=null&&getAnswer().equals(questionBank.getAnswer())) {
 						out.writeObject("Good job,you got it correct");
-						//System.out.println("here");
+						//give points
+						this.setPoints();
 					}
 					else if (getAnswer()!=null && getAnswer() != questionBank.getAnswer()) {
 						out.writeObject("Incorrect!");

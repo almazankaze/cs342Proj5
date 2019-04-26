@@ -11,6 +11,9 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
 import javafx.scene.image.Image;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 import javax.sound.sampled.AudioInputStream;
@@ -30,6 +33,11 @@ public class Main extends Application {
     AudioInputStream audioInput1, audioInput2, audioInput3;
     private ClientNetwork conn = createClient("127.0.0.1", 5555);
     private TextArea messages = new TextArea();
+    
+    // new to display the scores
+    Text scores;
+    private boolean updateScores = false;
+    
     public Parent setupGUI() {
 
         messages.setPrefHeight(300);
@@ -119,15 +127,21 @@ public class Main extends Application {
         mainLayout.setPadding(new Insets(25));
         mainLayout.setBottom(lobbyButtons);
         mainLayout.setBackground(new Background(backGround1));
-
+        
+        // new create score display
+        scores = new Text("SCORES		Player1: 0 Player2: 0 Player3: 0 Player4: 0");
+        scores.setFont(Font.font("Verdana", 20));
+        scores.setFill(Color.WHITE);
+        HBox scoresBox = new HBox(200, scores);
 
         //adding elements to the game layout
         gameLayout = new BorderPane();
-        gameLayout.setPadding(new Insets(25));
+        gameLayout.setTop(scoresBox);
         gameLayout.setCenter(messages);
         gameLayout.setBottom(gameButtons);
         gameLayout.setBackground(new Background(backGround2));
-
+        gameLayout.setPadding(new Insets(25));
+        
         //scene2 setup
         scene2 = new Scene(gameLayout, 790, 440);
 
@@ -259,8 +273,30 @@ public class Main extends Application {
 
 
                 }
-
-
+                
+             // check if you need to update scores
+                if(updateScores == true) {
+                	
+                	// new create score display
+                	messages.clear();
+                    scores = new Text(data.toString().intern());
+                    scores.setFont(Font.font("Verdana", 20));
+                    scores.setFill(Color.WHITE);
+                    HBox scoresBox = new HBox(200, scores);
+                    gameLayout.setTop(scoresBox);
+                    
+                    for(int i = 0; i<answerButton.length;i++) {
+                        answerButton[i].setDisable(false);
+                    }
+                    
+                    updateScores = false;
+                }
+                
+                // scores need to be updated
+                if(data.toString().intern() == "Begin next round!")
+                	updateScores = true;
+                
+                
                 // parses the server message into an array of words
                 String serverMessage[] =  data.toString().split(" ");
                 ArrayList<String> updatedConnections = new ArrayList<String>();
