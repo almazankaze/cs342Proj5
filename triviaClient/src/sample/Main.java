@@ -1,5 +1,3 @@
-package sample;
-
 import java.io.File;
 import java.util.ArrayList;
 import javafx.application.Application;

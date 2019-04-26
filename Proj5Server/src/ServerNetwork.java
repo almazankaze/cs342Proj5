@@ -13,6 +13,7 @@ public abstract class ServerNetwork {
 	private ConnThread connthread = new ConnThread();
 	private Consumer<Serializable> callback;
 	private ArrayList<myThread> clients = new ArrayList<myThread>();
+	private QuestionBank questionBank = new QuestionBank();
 	
 	public ServerNetwork(Consumer<Serializable> callback) {
 		this.callback = callback;
@@ -96,13 +97,17 @@ public abstract class ServerNetwork {
 							Thread.sleep(1000);
 						}
 						
-						
+						// send message to clients that the game has started
+						send("Game has started");
 						//REPLACE THIS WITH FIRST QUESTION
-						clients.get(0).setCorrectAnswer("A");
-						clients.get(1).setCorrectAnswer("A");
-						clients.get(2).setCorrectAnswer("A");
-						clients.get(3).setCorrectAnswer("A");
-						send("Q: Question");
+						//clients.get(0).setCorrectAnswer("A");
+						//clients.get(1).setCorrectAnswer("A");
+						//clients.get(2).setCorrectAnswer("A");
+						//clients.get(3).setCorrectAnswer("A");
+						
+						// send clients the question
+						send("Q: " + questionBank.getQuestion());
+						send(questionBank.getChoices());
 						//clients.get(3).out.writeObject("Q: Question");
 						
 						
@@ -198,11 +203,12 @@ public abstract class ServerNetwork {
 								&&clients.get(3).getAnswer()!=null ) {
 							
 							//GET RANDOM QUESTION AND DO ALL this logic
-							send("Q: new Question");
-							clients.get(0).setCorrectAnswer("A");
-							clients.get(1).setCorrectAnswer("A");
-							clients.get(2).setCorrectAnswer("A");
-							clients.get(3).setCorrectAnswer("A");
+							send("Q: " + questionBank.getQuestion());
+							send(questionBank.getChoices());
+							//clients.get(0).setCorrectAnswer("A");
+							//clients.get(1).setCorrectAnswer("A");
+							//clients.get(2).setCorrectAnswer("A");
+							//clients.get(3).setCorrectAnswer("A");
 							clients.get(0).setAnswer(null);
 							clients.get(1).setAnswer(null);
 							clients.get(2).setAnswer(null);
@@ -233,11 +239,11 @@ public abstract class ServerNetwork {
 					// show server what client picked
 					callback.accept("Player " + myID + " picked " + data);
 					this.setAnswer(data.toString().intern());
-					if(getAnswer()!=null&&getAnswer()== correctAnswer) {
+					if(getAnswer()!=null&&getAnswer().equals(questionBank.getAnswer())) {
 						out.writeObject("Good job,you got it correct");
 						//System.out.println("here");
 					}
-					else if (getAnswer()!=null && getAnswer() != correctAnswer) {
+					else if (getAnswer()!=null && getAnswer() != questionBank.getAnswer()) {
 						out.writeObject("Incorrect!");
 					}
 					//check timer here if it equals 10 check, otherwise dont do anything
