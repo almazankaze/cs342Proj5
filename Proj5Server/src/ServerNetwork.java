@@ -51,7 +51,6 @@ public abstract class ServerNetwork {
 		}
 
 		return result;
-
 	}
 	
 	public void sendtoX(int clientID, ObjectOutputStream out) throws Exception {
@@ -88,7 +87,6 @@ public abstract class ServerNetwork {
 					if(clients.size()<4) {
 						
 						clients.add(t);
-					
 					}
 					callback.accept("Player " + clientID + " joined");
 					if(clients.size() == 4) {
@@ -99,17 +97,12 @@ public abstract class ServerNetwork {
 						
 						// send message to clients that the game has started
 						send("Game has started");
-						//REPLACE THIS WITH FIRST QUESTION
-						//clients.get(0).setCorrectAnswer("A");
-						//clients.get(1).setCorrectAnswer("A");
-						//clients.get(2).setCorrectAnswer("A");
-						//clients.get(3).setCorrectAnswer("A");
+						
+						send("4 players ready, game will now start!");
 						
 						// send clients the question
 						send("Q: " + questionBank.getQuestion());
 						send(questionBank.getChoices());
-						//clients.get(3).out.writeObject("Q: Question");
-						
 						
 					}
 					clientID++;
@@ -176,9 +169,13 @@ public abstract class ServerNetwork {
 				activeConnections.add("true");
 				//inform the client of their id
 				sendtoX(myID,out);
-				send(convertToString(activeConnections));
-				System.out.println("\nSent activeConnections with a size of: " + activeConnections.size());
-				//out.writeObject("A: Yessir");
+				
+				String neededPlayers = String.valueOf(4 - myID);
+				
+				// inform client how many players are currently need
+				send("Player " + myID + " joined the game!\nNow waiting for " + neededPlayers + " more player(s)");
+				
+				//send(convertToString(activeConnections));
 				
 				while(true) {
 					if(clients.size()>3) {
@@ -212,10 +209,7 @@ public abstract class ServerNetwork {
 							//GET RANDOM QUESTION AND DO ALL this logic
 							send("Q: " + questionBank.getQuestion());
 							send(questionBank.getChoices());
-							//clients.get(0).setCorrectAnswer("A");
-							//clients.get(1).setCorrectAnswer("A");
-							//clients.get(2).setCorrectAnswer("A");
-							//clients.get(3).setCorrectAnswer("A");
+							
 							clients.get(0).setAnswer(null);
 							clients.get(1).setAnswer(null);
 							clients.get(2).setAnswer(null);
@@ -229,12 +223,14 @@ public abstract class ServerNetwork {
 									clients.get(i).out.writeObject("YOU WON");
 									for(int j = 0; j<clients.size();j++) {
 										if(i!=j) {
-											clients.get(i).out.writeObject("YOU LOST");
+											
+											// tell players that lost who won
+											String tmpID = String.valueOf(i + 1);
+											clients.get(j).out.writeObject("YOU LOST");
+											clients.get(j).out.writeObject("Player " + tmpID + " won the game");
 										}
 									}
 								}
-								
-								
 							}
 							
 						}
@@ -271,9 +267,10 @@ public abstract class ServerNetwork {
 				}catch(Exception f) {
 					System.out.println("Socket was already closed");
 				}
-
+				
+				// someone disconnected
 				try {
-					send(convertToString(activeConnections)); }
+					send("disconnected"); }
 				catch(Exception f) {
 					
 					f.printStackTrace();

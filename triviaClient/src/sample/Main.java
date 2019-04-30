@@ -1,5 +1,3 @@
-package sample;
-
 import java.io.File;
 
 import java.util.ArrayList;
@@ -114,9 +112,6 @@ public class Main extends Application {
         //timerLabel.setText(timeSeconds.toString());
         //timerLabel.setTextFill(Color.RED);
         //timerLabel.setStyle("-fx-font-size: 4em;");
-        
-        
-        
 
 
         //answer buttons setup
@@ -207,12 +202,6 @@ public class Main extends Application {
             System.exit(0);
         });
        
-        
-        
-       
-        
-        
-        
        return mainLayout;
     }
     
@@ -360,14 +349,15 @@ public class Main extends Application {
                     update.fire();
                 }
 
-                // if opponent joined the game room
+                // if enough players joined the game room
                 if(data.toString().intern() == "Game has started") {
+                	
+                	messages.clear();
+                	
                     // enable game buttons
                     for(int i = 0; i<answerButton.length;i++) {
                         answerButton[i].setDisable(false);
                     }
-
-
                 }
                 
              // check if you need to update scores
@@ -399,6 +389,29 @@ public class Main extends Application {
                 for(String word : data.toString().split(" ")) {
                     updatedConnections.add(word);
                 }
+                
+                
+                if(data.toString().intern() == "YOU WON" || data.toString().intern() == "YOU LOST") {
+                	
+                	// disable game buttons
+                    for(int i = 0; i<answerButton.length;i++) {
+                        answerButton[i].setDisable(true);
+                    }
+                }
+                
+                if(data.toString().intern() == "disconnected") {
+                	
+                	messages.clear();
+                	
+                	// disable game buttons
+                    for(int i = 0; i<answerButton.length;i++) {
+                        answerButton[i].setDisable(true);
+                    }
+                    
+                    // tell players one player or more have disconneted
+                    messages.appendText("Error: One or more players have disconnected\nNeed at least 4 players to continue playing");
+                }
+                
 				/*
 				// if first word of messaage is ID, set this.ID = to the corresponding ID (serverMessage[1])
 				if(serverMessage[0].intern() == "ID") {
