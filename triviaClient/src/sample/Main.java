@@ -1,5 +1,11 @@
+package sample;
+
 import java.io.File;
+
 import java.util.ArrayList;
+
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -8,6 +14,7 @@ import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.image.Image;
 import javafx.scene.layout.*;
@@ -15,6 +22,19 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import javafx.util.Duration;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.application.Application;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.stage.Stage;
+import javafx.scene.Group;
+import javafx.scene.Scene;
+import javafx.scene.control.Label;
+import javafx.scene.layout.HBox;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
@@ -24,7 +44,7 @@ public class Main extends Application {
 
     BorderPane mainLayout, gameLayout;
     Image lobbyBackground, gameBackground;
-    Button connect, exit,update;
+    Button connect,exit,update,next;
     Button[] answerButton;
     HBox lobbyButtons, gameButtons;
     Stage stage;
@@ -33,12 +53,22 @@ public class Main extends Application {
     AudioInputStream audioInput1, audioInput2, audioInput3;
     private ClientNetwork conn = createClient("127.0.0.1", 5555);
     private TextArea messages = new TextArea();
+    //timer
+    private static final Integer STARTTIME = 10;
+    private Timeline timeline;
+    private Label timerLabel = new Label();
+    private Integer seconds = STARTTIME;
     
     // new to display the scores
     Text scores;
     private boolean updateScores = false;
     
     public Parent setupGUI() {
+    	//set up time label
+    	timerLabel= new Label();
+    	timerLabel.setText("Countdown: 10");
+    	timerLabel.setFont(Font.font(30));
+    	timerLabel.setTextFill(Color.RED);
 
         messages.setPrefHeight(300);
 
@@ -74,17 +104,32 @@ public class Main extends Application {
         exit.getStylesheets().add("lobbyButtons.css");
         lobbyButtons = new HBox(10);
         lobbyButtons.getChildren().addAll(connect,exit);
+        
+        //next button setup
+        next = new Button("NEXT");
+        next.setMinSize(100, 30);
+        next.getStylesheets().add("lobbyButtons.css");
+        
+        //timer setup
+        //timerLabel.setText(timeSeconds.toString());
+        //timerLabel.setTextFill(Color.RED);
+        //timerLabel.setStyle("-fx-font-size: 4em;");
+        
+        
+        
 
 
         //answer buttons setup
         answerButton = new Button[4];
-        gameButtons = new HBox(80);
+        gameButtons = new HBox(60);
         for(int i=0; i<4; i++) {
             answerButton[i] = new Button();
-            answerButton[i].setMinSize(125, 45);
+            answerButton[i].setMinSize(100, 30);
             answerButton[i].getStylesheets().add("lobbyButtons.css");
             gameButtons.getChildren().add(answerButton[i]);
+            //gameButtons.getChildren().add(next);
         }
+        gameButtons.getChildren().add(next);
         answerButton[0].setText("A");
         answerButton[1].setText("B");
         answerButton[2].setText("C");
@@ -133,26 +178,77 @@ public class Main extends Application {
         scores.setFont(Font.font("Verdana", 20));
         scores.setFill(Color.WHITE);
         HBox scoresBox = new HBox(200, scores);
+        
+        //
+        VBox timerr = new VBox(80);
+        timerr.getChildren().add(timerLabel);
 
         //adding elements to the game layout
         gameLayout = new BorderPane();
         gameLayout.setTop(scoresBox);
         gameLayout.setCenter(messages);
         gameLayout.setBottom(gameButtons);
+        gameLayout.setRight(timerr);
         gameLayout.setBackground(new Background(backGround2));
         gameLayout.setPadding(new Insets(25));
         
         //scene2 setup
-        scene2 = new Scene(gameLayout, 790, 440);
+        scene2 = new Scene(gameLayout, 790, 500);
 
         // event handlers for lobby buttons
         connect.setOnAction(e -> {
             stage.setScene(scene2);
             stoplobbyMusic();
             playTickTock("ticktock.wav");
+            doTime();
         });
-        return mainLayout;
+        
+        exit.setOnAction(e -> {
+            System.exit(0);
+        });
+       
+        
+        
+       
+        
+        
+        
+       return mainLayout;
     }
+    
+    //set up timer
+    private void doTime() {
+    	 timeline= new Timeline();
+    	  
+    	  
+    	  KeyFrame frame= new KeyFrame(Duration.seconds(1), new EventHandler<ActionEvent>(){
+
+    	   @Override
+    	   public void handle(ActionEvent event) {
+    	    
+    	    
+    		seconds--;
+    		timerLabel.setText("Countdown: "+seconds.toString());
+    	    if(seconds<=0){
+    	     timeline.stop();
+    	    }
+    	     
+    	   }
+    	   
+    	   
+    	  }, null);
+    	  
+    	  timeline.setCycleCount(Timeline.INDEFINITE);
+    	  timeline.getKeyFrames().add(frame);
+    	  if(timeline!=null){
+    	   timeline.stop();
+    	  }
+    	  timeline.play();
+    	  
+    	  
+    	 }
+
+	   
 
 
     // initiates lobbyClip, and begins playing the music
@@ -221,7 +317,7 @@ public class Main extends Application {
             }
             //primaryStage.setScene(new Scene(createClientContent()));
         });
-
+        //doTime();
         scene1 = new Scene(setupGUI(), 795, 445);
         stage.setScene(scene1);
 
