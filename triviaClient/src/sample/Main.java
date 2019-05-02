@@ -65,7 +65,7 @@ public class Main extends Application {
     public Parent setupGUI() {
         //set up time label
         timerLabel= new Label();
-        timerLabel.setText("Countdown: 20");
+        timerLabel.setText("Countdown: 10");
         timerLabel.setFont(Font.font(30));
         timerLabel.setTextFill(Color.RED);
 
@@ -93,7 +93,7 @@ public class Main extends Application {
                 BackgroundSize.DEFAULT);
 
         //connect button setup
-        connect = new Button("Join");
+        connect = new Button("connect");
         connect.setMinSize(135, 60);
         connect.getStylesheets().add("lobbyButtons.css");
 
@@ -105,7 +105,7 @@ public class Main extends Application {
         lobbyButtons.getChildren().addAll(connect,exit);
 
         //next button setup
-        next = new Button("NEXT");
+        next = new Button("Quit");
         next.setMinSize(100, 30);
         next.getStylesheets().add("lobbyButtons.css");
 
@@ -200,6 +200,11 @@ public class Main extends Application {
             stoplobbyMusic();
 
 
+        });
+
+        // close the app
+        next.setOnAction(e -> {
+            System.exit(0);
         });
 
         exit.setOnAction(e -> {
@@ -407,6 +412,8 @@ public class Main extends Application {
                     playBuzzerRight("buzzerRight.wav");
                 }
 
+
+
                 if(data.toString().intern().contains("A: ")) {
                     System.out.println("yup");
                     answerButton[0].setText(data.toString().intern());
@@ -483,6 +490,9 @@ public class Main extends Application {
                     for(int i = 0; i<answerButton.length;i++) {
                         answerButton[i].setDisable(true);
                     }
+                    stopTickTock();
+                    timeline.stop();
+                    playLobbyMusic("lobbyMusic.wav");
                 }
 
                 if(data.toString().intern() == "disconnected") {
@@ -510,3 +520,5 @@ public class Main extends Application {
         });
     }
 }
+
+
