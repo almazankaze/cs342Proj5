@@ -65,7 +65,7 @@ public class Main extends Application {
     public Parent setupGUI() {
         //set up time label
         timerLabel= new Label();
-        timerLabel.setText("Countdown: 10");
+        timerLabel.setText("Countdown: 20");
         timerLabel.setFont(Font.font(30));
         timerLabel.setTextFill(Color.RED);
 
