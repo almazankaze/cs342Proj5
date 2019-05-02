@@ -47,26 +47,27 @@ public class Main extends Application {
     HBox lobbyButtons, gameButtons;
     Stage stage;
     Scene scene1, scene2;
-    Clip lobbyClip, tickClip;
-    AudioInputStream audioInput1, audioInput2, audioInput3;
+    Clip lobbyClip, tickClip, rightClip, wrongClip;
+    AudioInputStream audioInput1, audioInput2, audioInput3, audioInput4;
     private ClientNetwork conn = createClient("127.0.0.1", 5555);
     private TextArea messages = new TextArea();
     //timer
-    private static final Integer STARTTIME = 10;
+    private static final Integer STARTTIME = 20;
     private Timeline timeline;
     private Label timerLabel = new Label();
     private Integer seconds = STARTTIME;
-    
+    Boolean onSceneTwo = false;
+
     // new to display the scores
     Text scores;
     private boolean updateScores = false;
-    
+
     public Parent setupGUI() {
-    	//set up time label
-    	timerLabel= new Label();
-    	timerLabel.setText("Countdown: 10");
-    	timerLabel.setFont(Font.font(30));
-    	timerLabel.setTextFill(Color.RED);
+        //set up time label
+        timerLabel= new Label();
+        timerLabel.setText("Countdown: 10");
+        timerLabel.setFont(Font.font(30));
+        timerLabel.setTextFill(Color.RED);
 
         messages.setPrefHeight(300);
 
@@ -92,7 +93,7 @@ public class Main extends Application {
                 BackgroundSize.DEFAULT);
 
         //connect button setup
-        connect = new Button("connect");
+        connect = new Button("Join");
         connect.setMinSize(135, 60);
         connect.getStylesheets().add("lobbyButtons.css");
 
@@ -102,12 +103,12 @@ public class Main extends Application {
         exit.getStylesheets().add("lobbyButtons.css");
         lobbyButtons = new HBox(10);
         lobbyButtons.getChildren().addAll(connect,exit);
-        
+
         //next button setup
         next = new Button("NEXT");
         next.setMinSize(100, 30);
         next.getStylesheets().add("lobbyButtons.css");
-        
+
         //timer setup
         //timerLabel.setText(timeSeconds.toString());
         //timerLabel.setTextFill(Color.RED);
@@ -158,6 +159,8 @@ public class Main extends Application {
 
             }
         };
+
+         /// //// //// ///
         for(int i=0; i< 4; i++) {
             answerButton[i].setDisable(true);
             answerButton[i].setOnAction(choice);
@@ -167,13 +170,13 @@ public class Main extends Application {
         mainLayout.setPadding(new Insets(25));
         mainLayout.setBottom(lobbyButtons);
         mainLayout.setBackground(new Background(backGround1));
-        
+
         // new create score display
         scores = new Text("SCORES		Player1: 0 Player2: 0 Player3: 0 Player4: 0");
         scores.setFont(Font.font("Verdana", 20));
         scores.setFill(Color.WHITE);
         HBox scoresBox = new HBox(200, scores);
-        
+
         //
         VBox timerr = new VBox(80);
         timerr.getChildren().add(timerLabel);
@@ -186,58 +189,123 @@ public class Main extends Application {
         gameLayout.setRight(timerr);
         gameLayout.setBackground(new Background(backGround2));
         gameLayout.setPadding(new Insets(25));
-        
+
         //scene2 setup
         scene2 = new Scene(gameLayout, 790, 500);
 
         // event handlers for lobby buttons
         connect.setOnAction(e -> {
+            onSceneTwo = true;
             stage.setScene(scene2);
             stoplobbyMusic();
-            playTickTock("ticktock.wav");
-            doTime();
+
+
         });
-        
+
         exit.setOnAction(e -> {
             System.exit(0);
         });
-       
-       return mainLayout;
+
+        return mainLayout;
     }
-    
+
+   public void  disableGameButtons() {
+        for(int i=0; i< 4; i++) {
+            answerButton[i].setDisable(true);
+        }
+    }
+
+    public void sendNoAnswer() {
+
+        try {
+        conn.send("time ran out");
+        disableGameButtons();
+        stopTickTock();}
+        catch (Exception f) {
+            f.printStackTrace();
+        }
+
+    }
+
+
     //set up timer
     private void doTime() {
-    	 timeline= new Timeline();
-    	  
-    	  
-    	  KeyFrame frame= new KeyFrame(Duration.seconds(1), new EventHandler<ActionEvent>(){
+        playTickTock("ticktock.wav");
+        seconds = STARTTIME;
+        timeline= new Timeline();
 
-    	   @Override
-    	   public void handle(ActionEvent event) {
-    	    
-    	    
-    		seconds--;
-    		timerLabel.setText("Countdown: "+seconds.toString());
-    	    if(seconds<=0){
-    	     timeline.stop();
-    	    }
-    	     
-    	   }
-    	   
-    	   
-    	  }, null);
-    	  
-    	  timeline.setCycleCount(Timeline.INDEFINITE);
-    	  timeline.getKeyFrames().add(frame);
-    	  if(timeline!=null){
-    	   timeline.stop();
-    	  }
-    	  timeline.play();
-    	  
-    	  
-    	 }
 
-	   
+        KeyFrame frame= new KeyFrame(Duration.seconds(1), new EventHandler<ActionEvent>(){
+
+            @Override
+            public void handle(ActionEvent event) {
+
+
+                seconds--;
+                timerLabel.setText("Countdown: "+seconds.toString());
+                if(seconds<=0){
+                    sendNoAnswer();
+                    timeline.stop();
+                }
+
+            }
+
+
+        }, null);
+
+        timeline.setCycleCount(Timeline.INDEFINITE);
+        timeline.getKeyFrames().add(frame);
+        if(timeline!=null){
+            timeline.stop();
+        }
+        timeline.play();
+
+
+    }
+
+    public void playBuzzerWrong(String fileLocation) {
+        try {
+            File musicPath = new File(fileLocation);
+
+            if (musicPath.exists()) {
+                audioInput4 = AudioSystem.getAudioInputStream(musicPath);
+                wrongClip = AudioSystem.getClip();
+                wrongClip.open(audioInput4);
+                wrongClip.start();
+            }
+            else {
+                System.out.println("could not find the music file");
+            }
+
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    public void playBuzzerRight(String fileLocation) {
+        try {
+            File musicPath = new File(fileLocation);
+
+            if (musicPath.exists()) {
+                audioInput3 = AudioSystem.getAudioInputStream(musicPath);
+                rightClip = AudioSystem.getClip();
+                rightClip.open(audioInput3);
+                rightClip.start();
+            }
+            else {
+                System.out.println("could not find the music file");
+            }
+
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+
+    }
+
+
+
 
 
     // initiates lobbyClip, and begins playing the music
@@ -260,6 +328,7 @@ public class Main extends Application {
             e.printStackTrace();
         }
     }
+
 
     //stops playing the lobby game music
     public void stoplobbyMusic() {
@@ -331,6 +400,13 @@ public class Main extends Application {
             Platform.runLater(()->{
                 messages.appendText(data.toString() + "\n");
 
+                if(data.toString().intern().equals("Incorrect!")) {
+                    playBuzzerWrong("buzzerWrong.wav");
+                }
+                if(data.toString().intern().equals("Good job,you got it correct")) {
+                    playBuzzerRight("buzzerRight.wav");
+                }
+
                 if(data.toString().intern().contains("A: ")) {
                     System.out.println("yup");
                     answerButton[0].setText(data.toString().intern());
@@ -351,67 +427,77 @@ public class Main extends Application {
 
                 // if enough players joined the game room
                 if(data.toString().intern() == "Game has started") {
-                	
-                	messages.clear();
-                	
+                    if (onSceneTwo == false) {
+                        stage.setScene(scene2);
+                        stoplobbyMusic();
+                    }
+
+                    playTickTock("ticktock.wav");
+                    doTime();
+
+                    messages.clear();
+
                     // enable game buttons
                     for(int i = 0; i<answerButton.length;i++) {
                         answerButton[i].setDisable(false);
                     }
                 }
-                
-             // check if you need to update scores
+
+                // check if you need to update scores
                 if(updateScores == true) {
-                	
-                	// new create score display
-                	messages.clear();
+
+
+
+                    // new create score display
+                    messages.clear();
                     scores = new Text(data.toString().intern());
                     scores.setFont(Font.font("Verdana", 20));
                     scores.setFill(Color.WHITE);
                     HBox scoresBox = new HBox(200, scores);
                     gameLayout.setTop(scoresBox);
-                    
+
                     for(int i = 0; i<answerButton.length;i++) {
                         answerButton[i].setDisable(false);
                     }
-                    
+
                     updateScores = false;
+                    doTime();
                 }
-                
+
                 // scores need to be updated
                 if(data.toString().intern() == "Begin next round!")
-                	updateScores = true;
-                
-                
+                    updateScores = true;
+
+
                 // parses the server message into an array of words
                 String serverMessage[] =  data.toString().split(" ");
                 ArrayList<String> updatedConnections = new ArrayList<String>();
                 for(String word : data.toString().split(" ")) {
                     updatedConnections.add(word);
                 }
-                
-                
+
+
                 if(data.toString().intern() == "YOU WON" || data.toString().intern() == "YOU LOST") {
-                	
-                	// disable game buttons
+
+                    // disable game buttons
                     for(int i = 0; i<answerButton.length;i++) {
                         answerButton[i].setDisable(true);
                     }
                 }
-                
+
                 if(data.toString().intern() == "disconnected") {
-                	
-                	messages.clear();
-                	
-                	// disable game buttons
+
+                    messages.clear();
+
+                    // disable game buttons
                     for(int i = 0; i<answerButton.length;i++) {
                         answerButton[i].setDisable(true);
                     }
-                    
+
                     // tell players one player or more have disconneted
                     messages.appendText("Error: One or more players have disconnected\nNeed at least 4 players to continue playing");
                 }
-                
+
 				/*
 				// if first word of messaage is ID, set this.ID = to the corresponding ID (serverMessage[1])
 				if(serverMessage[0].intern() == "ID") {
