@@ -32,3 +32,20 @@ Which is a valid keyword in java?: a) interface b) string c) Float d) unsigned
 Which one is a valid declaration of a boolean?: a) boolean b1 = 0 b) boolean b2 = 'false' c) boolean b3 = false d) boolean b4 = Boolean.false()
 Which is a valid declarations of a String?: a) String s1 = null b) String s2 = 'null' c) String s3 = (String) 'abc' d) String s4 = (String) '\ufeed';
 What is the numerical range of a char?: a) -128 to 127 b) -(2^15) to (2^15) - 1 c) 0 to 32767 d) 0 to 65535
+Which of these packages contains the exception Stack Overflow in Java?: a) java.lang b) java.util c) java.io d) java.system
+Which component is used to compile, debug and execute java program?: a) JVM b) JDK c) JIT d) JRE
+Which component is responsible for converting bytecode into machine specific code?: a) JVM b) JDK c) JIT d) JRE
+Which component is responsible to run java program?: a) JVM b) JDK c) JIT d) JRE
+Which component is responsible to optimize bytecode to machine code?: a) JVM b) JDK c) JIT d) JRE
+Which of the below is invalid identifier with the main method?: a) public b) static c) private d) final
+What is the extension of java code files?: a) .class b) .java c) .txt d) .js
+What is the extension of compiled java classes?: a) .class b) .java c) .txt d) .js
+What is use of interpreter?: a) They convert bytecode to machine language code b) They read high level code and execute them c) They are intermediated between JIT and JVM d) It is a synonym for JIT
+Which of these method of class String is used to extract more than one character at a time a String object?: a) getchars() b) GetChars() c) Getchars() d) getChars()
+Which of these methods is an alternative to getChars() that stores the characters in an array of bytes?: a) getBytes() b) GetByte() c) giveByte() d) Give Bytes()
+Which of these is a process of writing the state of an object to a byte stream?: a) Serialization b) Externalization c) File Filtering d) All of the mentioned
+Which of these is a method of ObjectOutput interface used to finalize the output state so that any buffers are cleared?:a) clear() b) flush() c) fflush() d) close()
+Which of these package contains classes and interfaces for networking?: a) java.io b) java.util c) java.net d) java.network
+How many ports of TCP/IP are reserved for specific protocols?: a) 10 b) 1024 c) 2048 d) 512
+How many bits are in a single IP address?: a) 8 b) 16 c) 32 d) 64
+
